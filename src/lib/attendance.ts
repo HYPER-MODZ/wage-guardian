@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 
-export type AttendanceStatus = "present" | "absent" | "double";
+export type AttendanceStatus = "present" | "absent" | "double" | "holiday";
 
 export interface AttendanceRecord {
   date: string;
@@ -19,6 +19,8 @@ export const getStatusColor = (status: AttendanceStatus): string => {
       return "bg-attendance-absent";
     case "double":
       return "bg-attendance-double";
+    case "holiday":
+      return "bg-attendance-holiday";
     default:
       return "bg-gray-100";
   }

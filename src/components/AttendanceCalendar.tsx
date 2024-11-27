@@ -70,7 +70,7 @@ const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps
       </div>
 
       <div className="mt-6 flex gap-4 justify-center">
-        {(["present", "absent", "holiday"] as AttendanceStatus[]).map((status) => (
+        {(["present", "absent", "double", "holiday"] as AttendanceStatus[]).map((status) => (
           <div key={status} className="flex items-center gap-2">
             <div
               className={cn(

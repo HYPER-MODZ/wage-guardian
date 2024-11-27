@@ -42,7 +42,7 @@ const AttendanceMarker = ({ date, onClose, onSubmit }: AttendanceMarkerProps) =>
             onValueChange={(value) => setStatus(value as AttendanceStatus)}
             className="flex flex-col gap-4"
           >
-            {(["present", "absent", "double"] as AttendanceStatus[]).map(
+            {(["present", "absent", "double", "holiday"] as AttendanceStatus[]).map(
               (value) => (
                 <div key={value} className="flex items-center space-x-2">
                   <RadioGroupItem value={value} id={value} />

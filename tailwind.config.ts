@@ -55,7 +55,8 @@ export default {
         attendance: {
           present: "#22C55E",
           absent: "#EF4444",
-          double: "#3B82F6"
+          double: "#3B82F6",
+          holiday: "#EAB308"
         }
       },
       keyframes: {
