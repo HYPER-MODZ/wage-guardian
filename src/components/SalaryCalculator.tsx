@@ -14,15 +14,19 @@ const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
   const [calculation, setCalculation] = useState(calculateSalary(500, 0, 0, 0));
 
   useEffect(() => {
-    const totalDays = Object.keys(attendance).length;
+    const workingDays = Object.values(attendance).filter(
+      (status) => status !== "holiday"
+    ).length;
+    
     const absentDays = Object.values(attendance).filter(
       (status) => status === "absent"
     ).length;
+    
     const doubleDays = Object.values(attendance).filter(
       (status) => status === "double"
     ).length;
 
-    setCalculation(calculateSalary(dailyWage, totalDays, absentDays, doubleDays));
+    setCalculation(calculateSalary(dailyWage, workingDays, absentDays, doubleDays));
   }, [attendance, dailyWage]);
 
   return (
@@ -43,7 +47,7 @@ const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Total Days</Label>
+            <Label>Total Working Days</Label>
             <p className="text-2xl font-semibold">{calculation.totalDays}</p>
           </div>
           <div>
