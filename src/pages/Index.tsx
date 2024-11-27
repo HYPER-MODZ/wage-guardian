@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
@@ -21,13 +21,15 @@ const Index = () => {
   const { data: attendance = {} } = useQuery({
     queryKey: ['attendance'],
     queryFn: getAttendanceData,
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to load attendance data",
-        variant: "destructive",
-      });
-      console.error(error);
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Error",
+          description: "Failed to load attendance data",
+          variant: "destructive",
+        });
+        console.error(error);
+      },
     },
   });
 
