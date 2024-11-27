@@ -9,7 +9,7 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const SQL_CREATE_TABLE = `
-CREATE TABLE public.attendance (
+CREATE TABLE IF NOT EXISTS public.attendance (
   date TEXT PRIMARY KEY,
   status TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -17,32 +17,44 @@ CREATE TABLE public.attendance (
 
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
-  const { error } = await supabase
-    .from('attendance')
-    .select('*')
-    .limit(1);
+  try {
+    // First, try to create the table automatically
+    const { error: createError } = await supabase.rpc('exec', { query: SQL_CREATE_TABLE });
+    
+    // If we can't create it automatically, check if it exists
+    const { error } = await supabase
+      .from('attendance')
+      .select('*')
+      .limit(1);
 
-  if (error?.code === '42P01') {
+    if (error?.code === '42P01') {
+      toast({
+        title: "Database Table Missing",
+        description: "Copy this SQL and run it in your Supabase dashboard SQL editor:\n\n" + SQL_CREATE_TABLE,
+        variant: "destructive",
+        duration: 15000,
+      });
+      return false;
+    }
+
+    if (error && error.code !== '42P01') {
+      toast({
+        title: "Database Error",
+        description: "Failed to check table existence: " + error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  } catch (err) {
     toast({
-      title: "Database Table Missing",
-      description: "Please create the attendance table in your Supabase dashboard using the SQL command provided in the console.",
+      title: "Connection Error",
+      description: "Failed to connect to database. Please check your connection.",
       variant: "destructive",
-      duration: 10000,
     });
-    console.error('Please create the attendance table using this SQL:', SQL_CREATE_TABLE);
     return false;
   }
-
-  if (error) {
-    toast({
-      title: "Database Error",
-      description: "Failed to check table existence: " + error.message,
-      variant: "destructive",
-    });
-    return false;
-  }
-
-  return true;
 };
 
 export const getAttendanceData = async () => {
