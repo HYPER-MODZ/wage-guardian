@@ -17,27 +17,32 @@ CREATE TABLE public.attendance (
 
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
-  try {
-    const { error } = await supabase
-      .from('attendance')
-      .select('*')
-      .limit(1);
+  const { error } = await supabase
+    .from('attendance')
+    .select('*')
+    .limit(1);
 
-    if (error?.code === '42P01') {
-      toast({
-        title: "Database Table Missing",
-        description: "The attendance table needs to be created. Please run the following SQL in your Supabase dashboard:\n" + SQL_CREATE_TABLE,
-        variant: "destructive",
-        duration: 10000,
-      });
-      console.error('Please create the attendance table using this SQL:', SQL_CREATE_TABLE);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error('Error checking table:', err);
+  if (error?.code === '42P01') {
+    toast({
+      title: "Database Table Missing",
+      description: "Please create the attendance table in your Supabase dashboard using the SQL command provided in the console.",
+      variant: "destructive",
+      duration: 10000,
+    });
+    console.error('Please create the attendance table using this SQL:', SQL_CREATE_TABLE);
     return false;
   }
+
+  if (error) {
+    toast({
+      title: "Database Error",
+      description: "Failed to check table existence: " + error.message,
+      variant: "destructive",
+    });
+    return false;
+  }
+
+  return true;
 };
 
 export const getAttendanceData = async () => {
@@ -46,25 +51,34 @@ export const getAttendanceData = async () => {
     return {};
   }
 
-  const { data, error } = await supabase
-    .from('attendance')
-    .select('*');
-  
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('*');
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch attendance data: " + error.message,
+        variant: "destructive",
+      });
+      return {};
+    }
+    
+    const attendanceMap: Record<string, AttendanceStatus> = {};
+    data?.forEach(record => {
+      attendanceMap[record.date] = record.status;
+    });
+    
+    return attendanceMap;
+  } catch (err) {
     toast({
       title: "Error",
-      description: "Failed to fetch attendance data",
+      description: "An unexpected error occurred while fetching attendance data",
       variant: "destructive",
     });
-    throw error;
+    return {};
   }
-  
-  const attendanceMap: Record<string, AttendanceStatus> = {};
-  data?.forEach(record => {
-    attendanceMap[record.date] = record.status;
-  });
-  
-  return attendanceMap;
 };
 
 export const updateAttendance = async (date: string, status: AttendanceStatus) => {
@@ -73,16 +87,24 @@ export const updateAttendance = async (date: string, status: AttendanceStatus) =
     return;
   }
 
-  const { error } = await supabase
-    .from('attendance')
-    .upsert({ date, status });
-  
-  if (error) {
+  try {
+    const { error } = await supabase
+      .from('attendance')
+      .upsert({ date, status });
+    
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update attendance: " + error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+  } catch (err) {
     toast({
       title: "Error",
-      description: "Failed to update attendance",
+      description: "An unexpected error occurred while updating attendance",
       variant: "destructive",
     });
-    throw error;
   }
 };
