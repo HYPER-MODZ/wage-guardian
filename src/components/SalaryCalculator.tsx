@@ -9,9 +9,18 @@ interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
 }
 
+const DAILY_WAGE_KEY = "daily_wage";
+
 const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
-  const [dailyWage, setDailyWage] = useState(500);
+  const [dailyWage, setDailyWage] = useState(() => {
+    const saved = localStorage.getItem(DAILY_WAGE_KEY);
+    return saved ? Number(saved) : 500;
+  });
   const [calculation, setCalculation] = useState(calculateSalary(500, 0, 0, 0));
+
+  useEffect(() => {
+    localStorage.setItem(DAILY_WAGE_KEY, dailyWage.toString());
+  }, [dailyWage]);
 
   useEffect(() => {
     const workingDays = Object.values(attendance).filter(

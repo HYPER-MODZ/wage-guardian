@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import AttendanceMarker from "@/components/AttendanceMarker";
@@ -6,10 +6,19 @@ import SalaryCalculator from "@/components/SalaryCalculator";
 import { AttendanceStatus } from "@/lib/attendance";
 import { format } from "date-fns";
 
+const STORAGE_KEY = "attendance_tracker_data";
+
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>({});
+  const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(attendance));
+  }, [attendance]);
 
   const handleAttendanceSubmit = (date: Date, status: AttendanceStatus) => {
     const dateStr = format(date, "yyyy-MM-dd");
