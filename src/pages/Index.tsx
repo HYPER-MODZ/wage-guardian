@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import AdminPanel from "@/components/AdminPanel";
@@ -7,28 +8,52 @@ import SalaryCalculator from "@/components/SalaryCalculator";
 import { AttendanceStatus } from "@/lib/attendance";
 import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
-
-const STORAGE_KEY = "attendance_tracker_data";
+import { getAttendanceData, updateAttendance } from "@/lib/supabase-client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isAdmin, setIsAdmin] = useState(() => isAuthenticated());
-  const [attendance, setAttendance] = useState<Record<string, AttendanceStatus>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {};
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: attendance = {} } = useQuery({
+    queryKey: ['attendance'],
+    queryFn: getAttendanceData,
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to load attendance data",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
   });
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(attendance));
-  }, [attendance]);
+  const mutation = useMutation({
+    mutationFn: ({ date, status }: { date: string, status: AttendanceStatus }) =>
+      updateAttendance(date, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attendance'] });
+      toast({
+        title: "Success",
+        description: "Attendance updated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update attendance",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
 
   const handleAttendanceSubmit = (date: Date, status: AttendanceStatus) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    setAttendance((prev) => ({
-      ...prev,
-      [dateStr]: status,
-    }));
+    mutation.mutate({ date: dateStr, status });
   };
 
   const handleDateClick = (date: Date) => {
