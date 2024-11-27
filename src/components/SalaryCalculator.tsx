@@ -11,15 +11,18 @@ interface SalaryCalculatorProps {
 
 const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
   const [dailyWage, setDailyWage] = useState(500);
-  const [calculation, setCalculation] = useState(calculateSalary(500, 0, 0));
+  const [calculation, setCalculation] = useState(calculateSalary(500, 0, 0, 0));
 
   useEffect(() => {
     const totalDays = Object.keys(attendance).length;
     const absentDays = Object.values(attendance).filter(
       (status) => status === "absent"
     ).length;
+    const doubleDays = Object.values(attendance).filter(
+      (status) => status === "double"
+    ).length;
 
-    setCalculation(calculateSalary(dailyWage, totalDays, absentDays));
+    setCalculation(calculateSalary(dailyWage, totalDays, absentDays, doubleDays));
   }, [attendance, dailyWage]);
 
   return (
@@ -29,7 +32,7 @@ const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor="dailyWage">Daily Wage (₹)</Label>
+          <Label htmlFor="dailyWage">Daily Wage (Rs.)</Label>
           <Input
             id="dailyWage"
             type="number"
@@ -50,13 +53,19 @@ const SalaryCalculator = ({ attendance }: SalaryCalculatorProps) => {
             </p>
           </div>
           <div>
+            <Label>Double Shift Days</Label>
+            <p className="text-2xl font-semibold text-attendance-double">
+              {calculation.doubleDays}
+            </p>
+          </div>
+          <div>
             <Label>Gross Salary</Label>
-            <p className="text-2xl font-semibold">₹{calculation.grossSalary}</p>
+            <p className="text-2xl font-semibold">Rs. {calculation.grossSalary}</p>
           </div>
           <div>
             <Label>Net Salary</Label>
             <p className="text-2xl font-semibold text-attendance-present">
-              ₹{calculation.netSalary}
+              Rs. {calculation.netSalary}
             </p>
           </div>
         </div>
