@@ -9,9 +9,22 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
-  const { error } = await supabase.rpc('create_attendance_table', {});
+  const { error } = await supabase
+    .from('attendance')
+    .select('*')
+    .limit(1)
+    .catch(async () => {
+      // If table doesn't exist, create it
+      await supabase.schema.createTable('attendance', {
+        date: 'text primary key',
+        status: 'text not null',
+        created_at: 'timestamp with time zone default timezone(\'utc\'::text, now()) not null'
+      });
+      return { error: null };
+    });
+
   if (error && !error.message.includes('already exists')) {
-    console.error('Error creating table:', error);
+    console.error('Error accessing table:', error);
   }
 };
 
