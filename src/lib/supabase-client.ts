@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { AttendanceStatus } from './attendance';
+import { toast } from '@/components/ui/use-toast';
 
 // Provide fallback values for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lbuxmubjcdtpwvyidavn.supabase.co';
@@ -7,42 +8,56 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+const SQL_CREATE_TABLE = `
+CREATE TABLE public.attendance (
+  date TEXT PRIMARY KEY,
+  status TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);`;
+
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
   try {
-    // Try to query the table to check if it exists
     const { error } = await supabase
       .from('attendance')
       .select('*')
       .limit(1);
 
-    // If there's an error and it's not about permissions, we need to create the table
-    if (error && error.code === '42P01') {
-      // Since we can't create tables directly from the client,
-      // we'll show an error message to guide the user
-      console.error(
-        'The attendance table does not exist. Please create it using the following SQL in the Supabase dashboard:\n\n' +
-        'CREATE TABLE public.attendance (\n' +
-        '  date TEXT PRIMARY KEY,\n' +
-        '  status TEXT NOT NULL,\n' +
-        '  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(\'utc\'::text, now()) NOT NULL\n' +
-        ');'
-      );
+    if (error?.code === '42P01') {
+      toast({
+        title: "Database Table Missing",
+        description: "The attendance table needs to be created. Please run the following SQL in your Supabase dashboard:\n" + SQL_CREATE_TABLE,
+        variant: "destructive",
+        duration: 10000,
+      });
+      console.error('Please create the attendance table using this SQL:', SQL_CREATE_TABLE);
+      return false;
     }
+    return true;
   } catch (err) {
     console.error('Error checking table:', err);
+    return false;
   }
 };
 
-// Call initialization when the client is created
-initializeTable();
-
 export const getAttendanceData = async () => {
+  const tableExists = await initializeTable();
+  if (!tableExists) {
+    return {};
+  }
+
   const { data, error } = await supabase
     .from('attendance')
     .select('*');
   
-  if (error) throw error;
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch attendance data",
+      variant: "destructive",
+    });
+    throw error;
+  }
   
   const attendanceMap: Record<string, AttendanceStatus> = {};
   data?.forEach(record => {
@@ -53,9 +68,21 @@ export const getAttendanceData = async () => {
 };
 
 export const updateAttendance = async (date: string, status: AttendanceStatus) => {
+  const tableExists = await initializeTable();
+  if (!tableExists) {
+    return;
+  }
+
   const { error } = await supabase
     .from('attendance')
     .upsert({ date, status });
   
-  if (error) throw error;
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to update attendance",
+      variant: "destructive",
+    });
+    throw error;
+  }
 };
