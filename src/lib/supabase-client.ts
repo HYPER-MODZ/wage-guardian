@@ -9,22 +9,28 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
-  const { error } = await supabase
-    .from('attendance')
-    .select('*')
-    .limit(1)
-    .catch(async () => {
-      // If table doesn't exist, create it
-      await supabase.schema.createTable('attendance', {
-        date: 'text primary key',
-        status: 'text not null',
-        created_at: 'timestamp with time zone default timezone(\'utc\'::text, now()) not null'
-      });
-      return { error: null };
-    });
+  try {
+    // Try to query the table to check if it exists
+    const { error } = await supabase
+      .from('attendance')
+      .select('*')
+      .limit(1);
 
-  if (error && !error.message.includes('already exists')) {
-    console.error('Error accessing table:', error);
+    // If there's an error and it's not about permissions, we need to create the table
+    if (error && error.code === '42P01') {
+      // Since we can't create tables directly from the client,
+      // we'll show an error message to guide the user
+      console.error(
+        'The attendance table does not exist. Please create it using the following SQL in the Supabase dashboard:\n\n' +
+        'CREATE TABLE public.attendance (\n' +
+        '  date TEXT PRIMARY KEY,\n' +
+        '  status TEXT NOT NULL,\n' +
+        '  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(\'utc\'::text, now()) NOT NULL\n' +
+        ');'
+      );
+    }
+  } catch (err) {
+    console.error('Error checking table:', err);
   }
 };
 
