@@ -7,6 +7,17 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Initialize the attendance table if it doesn't exist
+const initializeTable = async () => {
+  const { error } = await supabase.rpc('create_attendance_table', {});
+  if (error && !error.message.includes('already exists')) {
+    console.error('Error creating table:', error);
+  }
+};
+
+// Call initialization when the client is created
+initializeTable();
+
 export const getAttendanceData = async () => {
   const { data, error } = await supabase
     .from('attendance')
