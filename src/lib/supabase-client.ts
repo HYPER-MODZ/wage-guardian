@@ -18,16 +18,15 @@ CREATE TABLE IF NOT EXISTS public.attendance (
 // Initialize the attendance table if it doesn't exist
 const initializeTable = async () => {
   try {
-    // First, try to create the table automatically
-    const { error: createError } = await supabase.rpc('exec', { query: SQL_CREATE_TABLE });
-    
-    // If we can't create it automatically, check if it exists
-    const { error } = await supabase
+    // Try to create the table using SQL query
+    const { data, error: sqlError } = await supabase
       .from('attendance')
-      .select('*')
-      .limit(1);
+      .select('count(*)')
+      .limit(1)
+      .single();
 
-    if (error?.code === '42P01') {
+    // If table doesn't exist, show SQL creation instructions
+    if (sqlError?.code === '42P01') {
       toast({
         title: "Database Table Missing",
         description: "Copy this SQL and run it in your Supabase dashboard SQL editor:\n\n" + SQL_CREATE_TABLE,
@@ -37,10 +36,11 @@ const initializeTable = async () => {
       return false;
     }
 
-    if (error && error.code !== '42P01') {
+    // Handle other potential errors
+    if (sqlError) {
       toast({
         title: "Database Error",
-        description: "Failed to check table existence: " + error.message,
+        description: "Failed to check table existence: " + sqlError.message,
         variant: "destructive",
       });
       return false;
