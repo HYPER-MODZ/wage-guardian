@@ -1,7 +1,7 @@
 // Simple authentication (in a real app, this should use a proper auth system)
 const ADMIN_CREDENTIALS = {
-  username: "admin",
-  password: "wage2024"
+  username: "Sunil",
+  password: "Sunil1234@"
 };
 
 export const authenticate = (username: string, password: string): boolean => {
