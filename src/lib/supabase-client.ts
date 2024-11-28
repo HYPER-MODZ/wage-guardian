@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { AttendanceStatus } from './attendance';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Provide fallback values for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lbuxmubjcdtpwvyidavn.supabase.co';
@@ -9,10 +9,10 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const SQL_CREATE_TABLE = `
-CREATE TABLE IF NOT EXISTS public.attendance (
-  date TEXT PRIMARY KEY,
-  status TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+CREATE TABLE IF NOT EXISTS attendance (
+    date TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );`;
 
 // Initialize the attendance table if it doesn't exist
@@ -22,34 +22,22 @@ const initializeTable = async () => {
       .from('attendance')
       .select('*', { count: 'exact', head: true });
 
-    // If table doesn't exist, show SQL creation instructions
     if (error?.code === '42P01') {
-      toast({
-        title: "Database Table Missing",
-        description: "Copy this SQL and run it in your Supabase dashboard SQL editor:\n\n" + SQL_CREATE_TABLE,
-        variant: "destructive",
-        duration: 15000,
-      });
+      toast.error(
+        "Database table is missing. Please run this SQL in your Supabase dashboard:\n" + SQL_CREATE_TABLE,
+        { duration: 10000 }
+      );
       return false;
     }
 
-    // Handle other potential errors
     if (error) {
-      toast({
-        title: "Database Error",
-        description: "Failed to check table existence: " + error.message,
-        variant: "destructive",
-      });
+      toast.error("Database error: " + error.message);
       return false;
     }
 
     return true;
   } catch (err) {
-    toast({
-      title: "Connection Error",
-      description: "Failed to connect to database. Please check your connection.",
-      variant: "destructive",
-    });
+    toast.error("Connection error. Please check your database connection.");
     return false;
   }
 };
@@ -63,29 +51,21 @@ export const getAttendanceData = async () => {
   try {
     const { data, error } = await supabase
       .from('attendance')
-      .select('*');
+      .select('date, status');
     
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch attendance data: " + error.message,
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch attendance data: " + error.message);
       return {};
     }
     
     const attendanceMap: Record<string, AttendanceStatus> = {};
     data?.forEach(record => {
-      attendanceMap[record.date] = record.status;
+      attendanceMap[record.date] = record.status as AttendanceStatus;
     });
     
     return attendanceMap;
   } catch (err) {
-    toast({
-      title: "Error",
-      description: "An unexpected error occurred while fetching attendance data",
-      variant: "destructive",
-    });
+    toast.error("An unexpected error occurred while fetching attendance data");
     return {};
   }
 };
@@ -102,18 +82,12 @@ export const updateAttendance = async (date: string, status: AttendanceStatus) =
       .upsert({ date, status });
     
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update attendance: " + error.message,
-        variant: "destructive",
-      });
+      toast.error("Failed to update attendance: " + error.message);
       return;
     }
+
+    toast.success("Attendance updated successfully");
   } catch (err) {
-    toast({
-      title: "Error",
-      description: "An unexpected error occurred while updating attendance",
-      variant: "destructive",
-    });
+    toast.error("An unexpected error occurred while updating attendance");
   }
 };
