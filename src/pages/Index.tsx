@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
-import AdminPanel from "@/components/AdminPanel";
-import LoginForm from "@/components/LoginForm";
 import SalaryCalculator from "@/components/SalaryCalculator";
+import { AppSidebar } from "@/components/AppSidebar";
 import { AttendanceStatus } from "@/lib/attendance";
-import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
 import { getAttendanceData, updateAttendance, removeAttendance } from "@/lib/supabase-client";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,7 +13,6 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isAdmin, setIsAdmin] = useState(() => isAuthenticated());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -60,9 +57,7 @@ const Index = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    if (isAdmin) {
-      setSelectedDate(date);
-    }
+    setSelectedDate(date);
   };
 
   const handleMonthChange = (date: Date) => {
@@ -75,6 +70,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-8 sm:px-4">
+      <AppSidebar />
       <div className="container max-w-4xl mx-auto space-y-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900">
           Time & Attendance Tracker
@@ -89,24 +85,9 @@ const Index = () => {
           />
 
           <SalaryCalculator 
-            attendance={attendance} 
-            isAdmin={isAdmin} 
+            attendance={attendance}
             currentMonth={currentMonth}
           />
-
-          {isAdmin ? (
-            <AdminPanel
-              selectedDate={selectedDate}
-              onClose={() => setSelectedDate(null)}
-              onSubmit={handleAttendanceSubmit}
-              onLogout={() => setIsAdmin(false)}
-            />
-          ) : (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Admin Login</h2>
-              <LoginForm onSuccess={() => setIsAdmin(true)} />
-            </div>
-          )}
         </div>
       </div>
     </div>
