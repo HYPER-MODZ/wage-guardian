@@ -3,14 +3,21 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AttendanceStatus, getStatusColor } from "@/lib/attendance";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AttendanceCalendarProps {
   attendance: Record<string, AttendanceStatus>;
   onDateClick: (date: Date) => void;
+  onRemoveAttendance: (date: Date) => void;
 }
 
-const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps) => {
+const AttendanceCalendar = ({ attendance, onDateClick, onRemoveAttendance }: AttendanceCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthStart = startOfMonth(currentDate);
@@ -26,9 +33,9 @@ const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 animate-fade-up">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 animate-fade-up">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">
+        <h2 className="text-xl sm:text-2xl font-semibold">
           {format(currentDate, "MMMM yyyy")}
         </h2>
         <div className="flex gap-2">
@@ -41,11 +48,11 @@ const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <div
             key={day}
-            className="text-center font-medium text-gray-500 py-2"
+            className="text-center font-medium text-gray-500 py-2 text-sm sm:text-base"
           >
             {day}
           </div>
@@ -55,21 +62,42 @@ const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps
           const dateStr = format(date, "yyyy-MM-dd");
           const status = attendance[dateStr];
           return (
-            <button
-              key={dateStr}
-              onClick={() => onDateClick(date)}
-              className={cn(
-                "aspect-square rounded-lg flex items-center justify-center transition-colors",
-                status ? getStatusColor(status) : "hover:bg-gray-100"
-              )}
-            >
-              {format(date, "d")}
-            </button>
+            <TooltipProvider key={dateStr}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative">
+                    <button
+                      onClick={() => onDateClick(date)}
+                      className={cn(
+                        "w-full aspect-square rounded-lg flex items-center justify-center transition-colors text-sm sm:text-base",
+                        status ? getStatusColor(status) : "hover:bg-gray-100"
+                      )}
+                    >
+                      {format(date, "d")}
+                    </button>
+                    {status && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveAttendance(date);
+                        }}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {status ? `${status} (click X to remove)` : 'Click to mark attendance'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           );
         })}
       </div>
 
-      <div className="mt-6 flex gap-4 justify-center">
+      <div className="mt-6 flex flex-wrap gap-4 justify-center">
         {(["present", "absent", "double", "holiday"] as AttendanceStatus[]).map((status) => (
           <div key={status} className="flex items-center gap-2">
             <div
@@ -78,7 +106,7 @@ const AttendanceCalendar = ({ attendance, onDateClick }: AttendanceCalendarProps
                 getStatusColor(status)
               )}
             />
-            <span className="capitalize">{status}</span>
+            <span className="capitalize text-sm sm:text-base">{status}</span>
           </div>
         ))}
       </div>

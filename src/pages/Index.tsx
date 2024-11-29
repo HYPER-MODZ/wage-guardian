@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
@@ -8,7 +8,7 @@ import SalaryCalculator from "@/components/SalaryCalculator";
 import { AttendanceStatus } from "@/lib/attendance";
 import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
-import { getAttendanceData, updateAttendance } from "@/lib/supabase-client";
+import { getAttendanceData, updateAttendance, removeAttendance } from "@/lib/supabase-client";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -34,8 +34,8 @@ const Index = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: ({ date, status }: { date: string, status: AttendanceStatus }) =>
-      updateAttendance(date, status),
+    mutationFn: ({ date, status }: { date: string, status: AttendanceStatus | null }) =>
+      status ? updateAttendance(date, status) : removeAttendance(date),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       toast({
@@ -53,7 +53,7 @@ const Index = () => {
     },
   });
 
-  const handleAttendanceSubmit = (date: Date, status: AttendanceStatus) => {
+  const handleAttendanceSubmit = (date: Date, status: AttendanceStatus | null) => {
     const dateStr = format(date, "yyyy-MM-dd");
     mutation.mutate({ date: dateStr, status });
   };
@@ -69,19 +69,20 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container max-w-4xl space-y-8">
-        <h1 className="text-4xl font-bold text-center text-gray-900">
+    <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-8 sm:px-4">
+      <div className="container max-w-4xl mx-auto space-y-6">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900">
           Time & Attendance Tracker
         </h1>
 
-        <div className="grid gap-8">
+        <div className="grid gap-6">
           <AttendanceCalendar
             attendance={attendance}
             onDateClick={handleDateClick}
+            onRemoveAttendance={(date) => handleAttendanceSubmit(date, null)}
           />
 
-          <SalaryCalculator attendance={attendance} />
+          <SalaryCalculator attendance={attendance} isAdmin={isAdmin} />
 
           {isAdmin ? (
             <AdminPanel
