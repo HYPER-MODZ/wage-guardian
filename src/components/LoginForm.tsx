@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,49 +13,6 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
-
-  // Handle viewport height adjustments for mobile keyboards
-  useEffect(() => {
-    const metaViewport = document.querySelector('meta[name=viewport]');
-    const originalContent = metaViewport?.getAttribute('content');
-    
-    const handleFocus = () => {
-      // When input is focused, prevent viewport resize
-      metaViewport?.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0');
-      // Scroll the input into view with a small delay to ensure keyboard is shown
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.activeElement?.getBoundingClientRect().top! - 100,
-          behavior: 'smooth'
-        });
-      }, 100);
-    };
-
-    const handleBlur = () => {
-      // Restore original viewport settings when input is blurred
-      if (originalContent) {
-        metaViewport?.setAttribute('content', originalContent);
-      }
-      // Reset scroll position
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    };
-
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => {
-      input.addEventListener('focus', handleFocus);
-      input.addEventListener('blur', handleBlur);
-    });
-
-    return () => {
-      inputs.forEach(input => {
-        input.removeEventListener('focus', handleFocus);
-        input.removeEventListener('blur', handleBlur);
-      });
-    };
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +42,6 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-          className="bg-background"
         />
       </div>
       <div className="space-y-2">
@@ -96,7 +52,6 @@ const LoginForm = ({ onSuccess }: LoginFormProps) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="bg-background"
         />
       </div>
       <Button type="submit" className="w-full">
