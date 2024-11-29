@@ -4,40 +4,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { calculateSalary } from "@/lib/salary";
 import { AttendanceStatus } from "@/lib/attendance";
+import { format } from "date-fns";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
   isAdmin: boolean;
+  currentMonth: Date;
 }
 
-const DAILY_WAGE_KEY = "daily_wage";
+const DAILY_RATE_KEY = "daily_rate";
 
-const SalaryCalculator = ({ attendance, isAdmin }: SalaryCalculatorProps) => {
-  const [dailyWage, setDailyWage] = useState(() => {
-    const saved = localStorage.getItem(DAILY_WAGE_KEY);
-    return saved ? Number(saved) : 500;
+const SalaryCalculator = ({ attendance, isAdmin, currentMonth }: SalaryCalculatorProps) => {
+  const [dailyRate, setDailyRate] = useState(() => {
+    const saved = localStorage.getItem(DAILY_RATE_KEY);
+    return saved ? Number(saved) : 750;
   });
-  const [calculation, setCalculation] = useState(calculateSalary(500, 0, 0, 0));
+  const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0));
 
   useEffect(() => {
-    localStorage.setItem(DAILY_WAGE_KEY, dailyWage.toString());
-  }, [dailyWage]);
+    localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
+  }, [dailyRate]);
 
   useEffect(() => {
-    const workingDays = Object.values(attendance).filter(
+    const currentMonthStr = format(currentMonth, "yyyy-MM");
+    
+    // Filter attendance records for the current month
+    const monthlyAttendance = Object.entries(attendance).reduce((acc, [date, status]) => {
+      if (date.startsWith(currentMonthStr)) {
+        acc[date] = status;
+      }
+      return acc;
+    }, {} as Record<string, AttendanceStatus>);
+
+    const workingDays = Object.values(monthlyAttendance).filter(
       (status) => status !== "holiday"
     ).length;
     
-    const absentDays = Object.values(attendance).filter(
+    const absentDays = Object.values(monthlyAttendance).filter(
       (status) => status === "absent"
     ).length;
     
-    const doubleDays = Object.values(attendance).filter(
+    const doubleDays = Object.values(monthlyAttendance).filter(
       (status) => status === "double"
     ).length;
 
-    setCalculation(calculateSalary(dailyWage, workingDays, absentDays, doubleDays));
-  }, [attendance, dailyWage]);
+    setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays));
+  }, [attendance, dailyRate, currentMonth]);
 
   return (
     <Card className="animate-fade-up">
@@ -46,12 +58,12 @@ const SalaryCalculator = ({ attendance, isAdmin }: SalaryCalculatorProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-2">
-          <Label htmlFor="dailyWage">Daily Wage (Rs.)</Label>
+          <Label htmlFor="dailyRate">Daily Rate (Rs.)</Label>
           <Input
-            id="dailyWage"
+            id="dailyRate"
             type="number"
-            value={dailyWage}
-            onChange={(e) => setDailyWage(Number(e.target.value))}
+            value={dailyRate}
+            onChange={(e) => setDailyRate(Number(e.target.value))}
             disabled={!isAdmin}
             className={!isAdmin ? "bg-gray-100" : ""}
           />

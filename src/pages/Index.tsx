@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isAdmin, setIsAdmin] = useState(() => isAuthenticated());
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -64,6 +65,10 @@ const Index = () => {
     }
   };
 
+  const handleMonthChange = (date: Date) => {
+    setCurrentMonth(date);
+  };
+
   if (showSplash) {
     return <SplashScreen onComplete={() => setShowSplash(false)} />;
   }
@@ -80,9 +85,14 @@ const Index = () => {
             attendance={attendance}
             onDateClick={handleDateClick}
             onRemoveAttendance={(date) => handleAttendanceSubmit(date, null)}
+            onMonthChange={handleMonthChange}
           />
 
-          <SalaryCalculator attendance={attendance} isAdmin={isAdmin} />
+          <SalaryCalculator 
+            attendance={attendance} 
+            isAdmin={isAdmin} 
+            currentMonth={currentMonth}
+          />
 
           {isAdmin ? (
             <AdminPanel

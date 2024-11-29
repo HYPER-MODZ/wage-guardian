@@ -15,9 +15,15 @@ interface AttendanceCalendarProps {
   attendance: Record<string, AttendanceStatus>;
   onDateClick: (date: Date) => void;
   onRemoveAttendance: (date: Date) => void;
+  onMonthChange: (date: Date) => void;
 }
 
-const AttendanceCalendar = ({ attendance, onDateClick, onRemoveAttendance }: AttendanceCalendarProps) => {
+const AttendanceCalendar = ({ 
+  attendance, 
+  onDateClick, 
+  onRemoveAttendance,
+  onMonthChange 
+}: AttendanceCalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthStart = startOfMonth(currentDate);
@@ -25,11 +31,15 @@ const AttendanceCalendar = ({ attendance, onDateClick, onRemoveAttendance }: Att
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const previousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
+    setCurrentDate(newDate);
+    onMonthChange(newDate);
   };
 
   const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
+    setCurrentDate(newDate);
+    onMonthChange(newDate);
   };
 
   return (
