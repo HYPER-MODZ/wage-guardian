@@ -13,15 +13,14 @@ export const calculateSalary = (
   absentDays: number,
   doubleDays: number
 ): SalaryCalculation => {
-  // Subtract absent days from total working days
-  const actualWorkingDays = totalDays - absentDays;
-  const regularDays = actualWorkingDays - doubleDays;
+  // totalDays now only includes present, double, and holiday days
+  const regularDays = totalDays - doubleDays;
   const grossSalary = (regularDays * dailyWage) + (doubleDays * dailyWage * 2);
   const netSalary = grossSalary;
 
   return {
     dailyWage,
-    totalDays: actualWorkingDays, // Return actual working days instead of total days
+    totalDays, // This now represents actual working days (present + double + holiday)
     absentDays,
     doubleDays,
     grossSalary,
