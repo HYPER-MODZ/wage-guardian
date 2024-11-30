@@ -5,16 +5,16 @@ import { Label } from "@/components/ui/label";
 import { calculateSalary } from "@/lib/salary";
 import { AttendanceStatus } from "@/lib/attendance";
 import { format } from "date-fns";
+import { isAuthenticated } from "@/lib/auth";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
-  isAdmin: boolean;
   currentMonth: Date;
 }
 
 const DAILY_RATE_KEY = "daily_rate";
 
-const SalaryCalculator = ({ attendance, isAdmin, currentMonth }: SalaryCalculatorProps) => {
+const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) => {
   const [dailyRate, setDailyRate] = useState(() => {
     const saved = localStorage.getItem(DAILY_RATE_KEY);
     return saved ? Number(saved) : 750;
@@ -36,8 +36,9 @@ const SalaryCalculator = ({ attendance, isAdmin, currentMonth }: SalaryCalculato
       return acc;
     }, {} as Record<string, AttendanceStatus>);
 
+    // Count only present and double days as working days
     const workingDays = Object.values(monthlyAttendance).filter(
-      (status) => status !== "holiday"
+      (status) => status === "present" || status === "double" || status === "holiday"
     ).length;
     
     const absentDays = Object.values(monthlyAttendance).filter(
@@ -64,8 +65,8 @@ const SalaryCalculator = ({ attendance, isAdmin, currentMonth }: SalaryCalculato
             type="number"
             value={dailyRate}
             onChange={(e) => setDailyRate(Number(e.target.value))}
-            disabled={!isAdmin}
-            className={!isAdmin ? "bg-gray-100" : ""}
+            disabled={!isAuthenticated()}
+            className={!isAuthenticated() ? "bg-gray-100" : ""}
           />
         </div>
 
