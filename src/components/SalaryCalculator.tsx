@@ -36,9 +36,9 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
       return acc;
     }, {} as Record<string, AttendanceStatus>);
 
-    // Count only present, double, and holiday days as working days
+    // Count only present and double days as working days
     const workingDays = Object.values(monthlyAttendance).filter(
-      (status) => status === "present" || status === "double" || status === "holiday"
+      (status) => status === "present" || status === "double"
     ).length;
     
     // Count absent days separately
