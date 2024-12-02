@@ -90,7 +90,6 @@ const Index = () => {
 
           <SalaryCalculator 
             attendance={attendance} 
-            isAdmin={isAdmin} 
             currentMonth={currentMonth}
           />
 
