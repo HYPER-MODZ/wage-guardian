@@ -41,13 +41,13 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         {/* Watermark */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 0.1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ 
             duration: 1,
             ease: "easeOut",
             delay: 0.5
           }}
-          className="absolute bottom-8 text-center w-full text-gray-800"
+          className="absolute bottom-8 text-center w-full text-primary"
         >
           <div className="text-lg font-bold tracking-widest">
             POWERED BY
