@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AttendanceStatus, getStatusColor } from "@/lib/attendance";
@@ -67,6 +67,12 @@ const AttendanceCalendar = ({
     }
   };
 
+  // Get the day of the week for the first day of the month (0-6, where 0 is Sunday)
+  const firstDayOfMonth = getDay(monthStart);
+  
+  // Create empty cells for days before the first day of the month
+  const emptyDays = Array(firstDayOfMonth).fill(null);
+
   return (
     <>
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 animate-fade-up">
@@ -92,6 +98,11 @@ const AttendanceCalendar = ({
             >
               {day}
             </div>
+          ))}
+
+          {/* Render empty cells for days before the first day of the month */}
+          {emptyDays.map((_, index) => (
+            <div key={`empty-${index}`} className="aspect-square" />
           ))}
 
           {days.map((date) => {
