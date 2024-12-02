@@ -55,9 +55,8 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
       (status) => status === "double"
     ).length;
 
-    // Calculate potential earnings if all days were marked as present
-    const potentialDays = daysInMonth;
-    const potentialAmount = dailyRate * potentialDays;
+    // Calculate potential earnings based on the current month's days
+    const potentialAmount = dailyRate * daysInMonth;
     setPotentialEarnings(potentialAmount);
 
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
@@ -115,7 +114,7 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
             </p>
           </div>
           <div className="col-span-2 border-t pt-4 mt-2">
-            <Label>Potential Monthly Earnings (All Days Present)</Label>
+            <Label>Potential Monthly Earnings ({format(currentMonth, "MMMM yyyy")})</Label>
             <p className="text-xl sm:text-2xl font-semibold text-primary">
               Rs. {potentialEarnings}
             </p>
