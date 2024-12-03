@@ -21,6 +21,7 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
   });
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
+  const [missedEarnings, setMissedEarnings] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
@@ -60,6 +61,11 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     const workableDays = daysInMonth - holidayDays;
     const potentialAmount = dailyRate * workableDays;
     setPotentialEarnings(potentialAmount);
+
+    // Calculate missed earnings (holidays + absent days)
+    const missedDays = holidayDays + absentDays;
+    const missedAmount = dailyRate * missedDays;
+    setMissedEarnings(missedAmount);
 
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
   }, [attendance, dailyRate, currentMonth]);
@@ -115,10 +121,16 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
               Rs. {calculation.netSalary}
             </p>
           </div>
-          <div className="col-span-2 border-t pt-4 mt-2">
+          <div>
             <Label>Potential Monthly Earnings ({format(currentMonth, "MMMM yyyy")})</Label>
             <p className="text-xl sm:text-2xl font-semibold text-primary">
               Rs. {potentialEarnings}
+            </p>
+          </div>
+          <div>
+            <Label>Missed Earnings (Holidays + Absent)</Label>
+            <p className="text-xl sm:text-2xl font-semibold text-red-500">
+              Rs. {missedEarnings}
             </p>
           </div>
         </div>
