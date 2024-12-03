@@ -117,7 +117,7 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
           </div>
           <div>
             <Label>Net Salary</Label>
-            <p className="text-xl sm:text-2xl font-semibold text-primary bg-primary/10 px-3 py-1 rounded-md">
+            <p className="text-xl sm:text-2xl font-semibold text-attendance-present">
               Rs. {calculation.netSalary}
             </p>
           </div>
