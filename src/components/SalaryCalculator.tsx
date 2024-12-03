@@ -56,7 +56,9 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     ).length;
 
     // Calculate potential earnings based on the current month's days
-    const potentialAmount = dailyRate * daysInMonth;
+    // Exclude holidays from potential earnings calculation
+    const workableDays = daysInMonth - holidayDays;
+    const potentialAmount = dailyRate * workableDays;
     setPotentialEarnings(potentialAmount);
 
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
@@ -92,7 +94,7 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
             </p>
           </div>
           <div>
-            <Label>Holiday Days</Label>
+            <Label>Holiday Days (Unpaid)</Label>
             <p className="text-xl sm:text-2xl font-semibold text-attendance-holiday">
               {calculation.holidayDays}
             </p>

@@ -17,7 +17,8 @@ export const calculateSalary = (
 ): SalaryCalculation => {
   // totalDays now only includes present and double days
   const regularDays = totalDays - doubleDays;
-  const grossSalary = (regularDays * dailyWage) + (doubleDays * dailyWage * 2) + (holidayDays * dailyWage);
+  // Calculate salary without considering holidays
+  const grossSalary = (regularDays * dailyWage) + (doubleDays * dailyWage * 2);
   const netSalary = grossSalary;
 
   return {
