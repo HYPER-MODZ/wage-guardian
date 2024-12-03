@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { calculateSalary } from "@/lib/salary";
 import { AttendanceStatus } from "@/lib/attendance";
 import { format, getDaysInMonth } from "date-fns";
@@ -22,6 +25,7 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
   const [missedEarnings, setMissedEarnings] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
@@ -31,7 +35,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     const currentMonthStr = format(currentMonth, "yyyy-MM");
     const daysInMonth = getDaysInMonth(currentMonth);
     
-    // Filter attendance records for the current month
     const monthlyAttendance = Object.entries(attendance).reduce((acc, [date, status]) => {
       if (date.startsWith(currentMonthStr)) {
         acc[date] = status;
@@ -39,7 +42,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
       return acc;
     }, {} as Record<string, AttendanceStatus>);
 
-    // Count different types of days
     const workingDays = Object.values(monthlyAttendance).filter(
       (status) => status === "present" || status === "double"
     ).length;
@@ -56,13 +58,10 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
       (status) => status === "double"
     ).length;
 
-    // Calculate potential earnings based on the current month's days
-    // Exclude holidays from potential earnings calculation
     const workableDays = daysInMonth - holidayDays;
     const potentialAmount = dailyRate * workableDays;
     setPotentialEarnings(potentialAmount);
 
-    // Calculate missed earnings (holidays + absent days)
     const missedDays = holidayDays + absentDays;
     const missedAmount = dailyRate * missedDays;
     setMissedEarnings(missedAmount);
@@ -121,19 +120,35 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
               Rs. {calculation.netSalary}
             </p>
           </div>
-          <div>
-            <Label>Potential Monthly Earnings ({format(currentMonth, "MMMM yyyy")})</Label>
-            <p className="text-xl sm:text-2xl font-semibold text-primary">
-              Rs. {potentialEarnings}
-            </p>
-          </div>
-          <div>
-            <Label>Missed Earnings (Holidays + Absent)</Label>
-            <p className="text-xl sm:text-2xl font-semibold text-red-500">
-              Rs. {missedEarnings}
-            </p>
-          </div>
         </div>
+
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-between p-4 rounded-lg hover:bg-gray-100"
+            >
+              <span>See Advanced Details</span>
+              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div>
+                <Label>Potential Monthly Earnings ({format(currentMonth, "MMMM yyyy")})</Label>
+                <p className="text-xl sm:text-2xl font-semibold text-primary">
+                  Rs. {potentialEarnings}
+                </p>
+              </div>
+              <div>
+                <Label>Missed Earnings (Holidays + Absent)</Label>
+                <p className="text-xl sm:text-2xl font-semibold text-red-500">
+                  Rs. {missedEarnings}
+                </p>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );
