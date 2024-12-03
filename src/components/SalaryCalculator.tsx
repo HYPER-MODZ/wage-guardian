@@ -21,8 +21,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
   });
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
-  const [potentialWithHolidays, setPotentialWithHolidays] = useState(0);
-  const [potentialWithAbsent, setPotentialWithAbsent] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
@@ -62,14 +60,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     const workableDays = daysInMonth - holidayDays;
     const potentialAmount = dailyRate * workableDays;
     setPotentialEarnings(potentialAmount);
-
-    // Calculate potential if holidays were working days
-    const potentialWithHolidaysAmount = dailyRate * (workableDays + holidayDays);
-    setPotentialWithHolidays(potentialWithHolidaysAmount);
-
-    // Calculate potential if absent days were working days
-    const potentialWithAbsentAmount = dailyRate * (workingDays + absentDays);
-    setPotentialWithAbsent(potentialWithAbsentAmount);
 
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
   }, [attendance, dailyRate, currentMonth]);
@@ -129,18 +119,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
             <Label>Potential Monthly Earnings ({format(currentMonth, "MMMM yyyy")})</Label>
             <p className="text-xl sm:text-2xl font-semibold text-primary">
               Rs. {potentialEarnings}
-            </p>
-          </div>
-          <div>
-            <Label>If Holidays Were Working Days</Label>
-            <p className="text-xl sm:text-2xl font-semibold text-attendance-holiday">
-              Rs. {potentialWithHolidays}
-            </p>
-          </div>
-          <div>
-            <Label>If Absent Days Were Present</Label>
-            <p className="text-xl sm:text-2xl font-semibold text-attendance-absent">
-              Rs. {potentialWithAbsent}
             </p>
           </div>
         </div>
