@@ -11,6 +11,7 @@ import { format, getDaysInMonth } from "date-fns";
 import { isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import SalaryFormula from "./SalaryFormula";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
@@ -24,9 +25,9 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
   const [potentialEarnings, setPotentialEarnings] = useState(0);
   const [missedEarnings, setMissedEarnings] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [showFormula, setShowFormula] = useState(false);
   const { toast } = useToast();
 
-  // Fetch initial daily rate from Supabase
   useEffect(() => {
     const fetchDailyRate = async () => {
       try {
@@ -204,9 +205,23 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
                   Rs. {missedEarnings}
                 </p>
               </div>
+              <Button 
+                variant="outline"
+                onClick={() => setShowFormula(true)}
+                className="mt-2"
+              >
+                See Formula
+              </Button>
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        <SalaryFormula
+          isOpen={showFormula}
+          onClose={() => setShowFormula(false)}
+          calculation={calculation}
+          dailyRate={dailyRate}
+        />
       </CardContent>
     </Card>
   );
