@@ -5,6 +5,7 @@ import AttendanceCalendar from "@/components/AttendanceCalendar";
 import AdminPanel from "@/components/AdminPanel";
 import LoginForm from "@/components/LoginForm";
 import SalaryCalculator from "@/components/SalaryCalculator";
+import ThemeToggle from "@/components/ThemeToggle";
 import { AttendanceStatus } from "@/lib/attendance";
 import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
@@ -74,9 +75,10 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-8 sm:px-4">
+    <div className="min-h-screen bg-background py-4 px-2 sm:py-8 sm:px-4">
+      <ThemeToggle />
       <div className="container max-w-4xl mx-auto space-y-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-foreground">
           Time & Attendance Tracker
         </h1>
 
@@ -101,7 +103,7 @@ const Index = () => {
               onLogout={() => setIsAdmin(false)}
             />
           ) : (
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-card rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Admin Login</h2>
               <LoginForm onSuccess={() => setIsAdmin(true)} />
             </div>
