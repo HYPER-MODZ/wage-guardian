@@ -9,6 +9,7 @@ import { calculateSalary } from "@/lib/salary";
 import { AttendanceStatus } from "@/lib/attendance";
 import { format, getDaysInMonth } from "date-fns";
 import { isAuthenticated } from "@/lib/auth";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
@@ -22,10 +23,12 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     const saved = localStorage.getItem(DAILY_RATE_KEY);
     return saved ? Number(saved) : 750;
   });
+  const [tempDailyRate, setTempDailyRate] = useState(dailyRate);
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
   const [missedEarnings, setMissedEarnings] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
@@ -69,22 +72,40 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
   }, [attendance, dailyRate, currentMonth]);
 
+  const handleSave = () => {
+    setDailyRate(tempDailyRate);
+    toast({
+      title: "Success",
+      description: "Daily rate has been saved",
+    });
+  };
+
   return (
     <Card className="animate-fade-up">
       <CardHeader>
         <CardTitle>Salary Calculation</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="dailyRate">Daily Rate (Rs.)</Label>
-          <Input
-            id="dailyRate"
-            type="number"
-            value={dailyRate}
-            onChange={(e) => setDailyRate(Number(e.target.value))}
-            disabled={!isAuthenticated()}
-            className={!isAuthenticated() ? "bg-gray-100" : ""}
-          />
+          <div className="flex gap-2">
+            <Input
+              id="dailyRate"
+              type="number"
+              value={tempDailyRate}
+              onChange={(e) => setTempDailyRate(Number(e.target.value))}
+              disabled={!isAuthenticated()}
+              className={!isAuthenticated() ? "bg-gray-100" : ""}
+            />
+            {isAuthenticated() && (
+              <Button onClick={handleSave}>
+                Save
+              </Button>
+            )}
+          </div>
+          {!isAuthenticated() && (
+            <p className="text-sm text-gray-500">Current daily rate: Rs. {dailyRate}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
