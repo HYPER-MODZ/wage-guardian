@@ -22,23 +22,43 @@ interface SalaryFormulaProps {
 const SalaryFormula = ({ isOpen, onClose, calculation, dailyRate }: SalaryFormulaProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border border-gray-200 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>Salary Calculation Formula</DialogTitle>
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            Salary Calculation Formula
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 font-mono text-sm sm:text-base">
-          <div className="space-y-2">
-            <p>Total Working Days {calculation.totalDays} Days = Rs. {calculation.totalDays * dailyRate}</p>
-            <p>Double Shift Days {calculation.doubleDays} Days = + Rs. {calculation.doubleDays * dailyRate}</p>
-            <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-            <p className="font-semibold">Net Salary = Rs. {calculation.netSalary}</p>
+          <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <p className="flex justify-between items-center">
+              <span>Total Working Days ({calculation.totalDays} Days)</span>
+              <span className="font-semibold">Rs. {calculation.totalDays * dailyRate}</span>
+            </p>
+            <p className="flex justify-between items-center text-blue-600 dark:text-blue-400">
+              <span>Double Shift Days ({calculation.doubleDays} Days)</span>
+              <span className="font-semibold">+ Rs. {calculation.doubleDays * dailyRate}</span>
+            </p>
+            <div className="border-t-2 border-gray-200 dark:border-gray-700 my-3"></div>
+            <p className="flex justify-between items-center font-bold text-green-600 dark:text-green-400">
+              <span>Net Salary</span>
+              <span>Rs. {calculation.netSalary}</span>
+            </p>
           </div>
           
-          <div className="mt-6 space-y-2">
-            <p>Potential Monthly Earnings {calculation.totalDays + calculation.absentDays + calculation.holidayDays} Days = Rs. {(calculation.totalDays + calculation.absentDays + calculation.holidayDays) * dailyRate}</p>
-            <p>Absent Days + Holiday Days {calculation.absentDays + calculation.holidayDays} Days = - Rs. {(calculation.absentDays + calculation.holidayDays) * dailyRate}</p>
-            <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-            <p className="font-semibold">Net Salary = Rs. {calculation.netSalary}</p>
+          <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <p className="flex justify-between items-center">
+              <span>Potential Monthly Earnings ({calculation.totalDays + calculation.absentDays + calculation.holidayDays} Days)</span>
+              <span className="font-semibold">Rs. {(calculation.totalDays + calculation.absentDays + calculation.holidayDays) * dailyRate}</span>
+            </p>
+            <p className="flex justify-between items-center text-red-600 dark:text-red-400">
+              <span>Absent Days + Holiday Days ({calculation.absentDays + calculation.holidayDays} Days)</span>
+              <span className="font-semibold">- Rs. {(calculation.absentDays + calculation.holidayDays) * dailyRate}</span>
+            </p>
+            <div className="border-t-2 border-gray-200 dark:border-gray-700 my-3"></div>
+            <p className="flex justify-between items-center font-bold text-green-600 dark:text-green-400">
+              <span>Net Salary</span>
+              <span>Rs. {calculation.netSalary}</span>
+            </p>
           </div>
         </div>
       </DialogContent>
