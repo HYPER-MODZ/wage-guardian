@@ -10,29 +10,51 @@ import { AttendanceStatus } from "@/lib/attendance";
 import { format, getDaysInMonth } from "date-fns";
 import { isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
   currentMonth: Date;
 }
 
-const DAILY_RATE_KEY = "daily_rate";
-
 const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) => {
-  const [dailyRate, setDailyRate] = useState(() => {
-    const saved = localStorage.getItem(DAILY_RATE_KEY);
-    return saved ? Number(saved) : 750;
-  });
-  const [tempDailyRate, setTempDailyRate] = useState(dailyRate);
+  const [dailyRate, setDailyRate] = useState(750);
+  const [tempDailyRate, setTempDailyRate] = useState(750);
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
   const [missedEarnings, setMissedEarnings] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
+  // Fetch initial daily rate from Supabase
   useEffect(() => {
-    localStorage.setItem(DAILY_RATE_KEY, dailyRate.toString());
-  }, [dailyRate]);
+    const fetchDailyRate = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('daily_rate')
+          .select('rate')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error) throw error;
+        
+        if (data) {
+          setDailyRate(Number(data.rate));
+          setTempDailyRate(Number(data.rate));
+        }
+      } catch (error) {
+        console.error('Error fetching daily rate:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load daily rate",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchDailyRate();
+  }, [toast]);
 
   useEffect(() => {
     const currentMonthStr = format(currentMonth, "yyyy-MM");
@@ -72,12 +94,27 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
   }, [attendance, dailyRate, currentMonth]);
 
-  const handleSave = () => {
-    setDailyRate(tempDailyRate);
-    toast({
-      title: "Success",
-      description: "Daily rate has been saved",
-    });
+  const handleSave = async () => {
+    try {
+      const { error } = await supabase
+        .from('daily_rate')
+        .insert({ rate: tempDailyRate });
+
+      if (error) throw error;
+
+      setDailyRate(tempDailyRate);
+      toast({
+        title: "Success",
+        description: "Daily rate has been saved",
+      });
+    } catch (error) {
+      console.error('Error saving daily rate:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save daily rate",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
