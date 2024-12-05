@@ -169,14 +169,16 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
               {calculation.doubleDays}
             </p>
           </div>
-        </div>
-
-        {/* Enhanced Net Salary Display */}
-        <div className="mt-6 p-6 bg-gradient-to-br from-primary/10 to-violet-500/10 rounded-xl border border-primary/20 shadow-lg animate-fade-up">
-          <Label className="text-lg font-semibold text-primary">Net Salary</Label>
-          <p className="text-3xl sm:text-4xl font-bold mt-2 bg-gradient-to-r from-primary to-violet-500 bg-clip-text text-transparent animate-pulse">
-            Rs. {calculation.netSalary}
-          </p>
+          <div>
+            <Label>Gross Salary</Label>
+            <p className="text-xl sm:text-2xl font-semibold">Rs. {calculation.grossSalary}</p>
+          </div>
+          <div>
+            <Label>Net Salary</Label>
+            <p className="text-xl sm:text-2xl font-semibold text-attendance-present">
+              Rs. {calculation.netSalary}
+            </p>
+          </div>
         </div>
 
         <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
