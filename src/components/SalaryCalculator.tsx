@@ -172,9 +172,9 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
         </div>
 
         {/* Enhanced Net Salary Display */}
-        <div className="mt-6 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg animate-fade-in">
-          <Label className="text-lg font-semibold">Net Salary</Label>
-          <p className="text-3xl sm:text-4xl font-bold mt-2 text-primary animate-fade-up">
+        <div className="mt-6 p-6 bg-gradient-to-br from-primary/10 to-violet-500/10 rounded-xl border border-primary/20 shadow-lg animate-fade-up">
+          <Label className="text-lg font-semibold text-primary">Net Salary</Label>
+          <p className="text-3xl sm:text-4xl font-bold mt-2 bg-gradient-to-r from-primary to-violet-500 bg-clip-text text-transparent animate-pulse">
             Rs. {calculation.netSalary}
           </p>
         </div>
