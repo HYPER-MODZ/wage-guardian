@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import SplashScreen from "@/components/SplashScreen";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
@@ -10,7 +10,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
 import { getAttendanceData, updateAttendance, removeAttendance } from "@/lib/supabase-client";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
+import { NotificationSystem } from "@/components/NotificationSystem";
 
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -19,85 +19,6 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(() => isAuthenticated());
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('ServiceWorker registration successful');
-          setSwRegistration(registration);
-          
-          // Request notification permission
-          if (Notification.permission === 'default') {
-            Notification.requestPermission().then((permission) => {
-              console.log('Permission request result:', permission);
-              if (permission === 'granted') {
-                toast({
-                  title: "Notifications Enabled",
-                  description: "You will now receive attendance reminders",
-                });
-              }
-            });
-          }
-        })
-        .catch((error) => {
-          console.error('ServiceWorker registration failed:', error);
-        });
-    } else {
-      console.log('Service workers are not supported');
-    }
-  }, [toast]);
-
-  const sendTestNotification = async () => {
-    console.log('Attempting to send test notification...');
-    
-    if (!('serviceWorker' in navigator)) {
-      console.log('Service workers not supported');
-      toast({
-        title: "Error",
-        description: "Notifications are not supported in your browser",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      console.log('Permission requested:', permission);
-    }
-
-    if (Notification.permission === 'granted' && swRegistration) {
-      console.log('Showing notification through service worker...');
-      try {
-        await swRegistration.showNotification('Attendance Reminder', {
-          body: 'This is a test notification. Don\'t forget to mark your attendance!',
-          icon: '/favicon.ico',
-          requireInteraction: true,
-          tag: 'attendance-reminder'
-        });
-
-        toast({
-          title: "Notification Sent",
-          description: "Check your browser notifications",
-        });
-      } catch (error) {
-        console.error('Error showing notification:', error);
-        toast({
-          title: "Error",
-          description: "Failed to show notification: " + error.message,
-          variant: "destructive",
-        });
-      }
-    } else {
-      console.log('Permission denied or service worker not ready');
-      toast({
-        title: "Error",
-        description: "Please enable notifications in your browser settings",
-        variant: "destructive",
-      });
-    }
-  };
 
   const { data: attendance = {} } = useQuery({
     queryKey: ['attendance'],
@@ -160,14 +81,9 @@ const Index = () => {
           Time & Attendance Tracker
         </h1>
 
-        <div className="grid gap-6">
-          <Button 
-            onClick={sendTestNotification}
-            className="w-full sm:w-auto"
-          >
-            Send Test Notification
-          </Button>
+        <NotificationSystem />
 
+        <div className="grid gap-6">
           <AttendanceCalendar
             attendance={attendance}
             onDateClick={handleDateClick}
