@@ -19,34 +19,41 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(() => isAuthenticated());
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [swRegistration, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
-    // Request notification permission when the component mounts
-    if ('Notification' in window) {
-      console.log('Current notification permission:', Notification.permission);
-      
-      if (Notification.permission === 'default') {
-        Notification.requestPermission().then((permission) => {
-          console.log('Permission request result:', permission);
-          if (permission === 'granted') {
-            toast({
-              title: "Notifications Enabled",
-              description: "You will now receive attendance reminders",
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('ServiceWorker registration successful');
+          setSwRegistration(registration);
+          
+          // Request notification permission
+          if (Notification.permission === 'default') {
+            Notification.requestPermission().then((permission) => {
+              console.log('Permission request result:', permission);
+              if (permission === 'granted') {
+                toast({
+                  title: "Notifications Enabled",
+                  description: "You will now receive attendance reminders",
+                });
+              }
             });
           }
+        })
+        .catch((error) => {
+          console.error('ServiceWorker registration failed:', error);
         });
-      }
     } else {
-      console.log('Notifications not supported in this browser');
+      console.log('Service workers are not supported');
     }
   }, [toast]);
 
   const sendTestNotification = async () => {
     console.log('Attempting to send test notification...');
-    console.log('Current permission status:', Notification.permission);
-
-    if (!('Notification' in window)) {
-      console.log('Notifications not supported');
+    
+    if (!('serviceWorker' in navigator)) {
+      console.log('Service workers not supported');
       toast({
         title: "Error",
         description: "Notifications are not supported in your browser",
@@ -60,36 +67,30 @@ const Index = () => {
       console.log('Permission requested:', permission);
     }
 
-    if (Notification.permission === 'granted') {
-      console.log('Creating notification...');
+    if (Notification.permission === 'granted' && swRegistration) {
+      console.log('Showing notification through service worker...');
       try {
-        const notification = new Notification('Attendance Reminder', {
+        await swRegistration.showNotification('Attendance Reminder', {
           body: 'This is a test notification. Don\'t forget to mark your attendance!',
           icon: '/favicon.ico',
-          requireInteraction: true, // This makes the notification stay until user interacts with it
-          tag: 'attendance-reminder' // This ensures we don't spam notifications
+          requireInteraction: true,
+          tag: 'attendance-reminder'
         });
-
-        notification.onclick = () => {
-          console.log('Notification clicked');
-          window.focus();
-          notification.close();
-        };
 
         toast({
           title: "Notification Sent",
           description: "Check your browser notifications",
         });
       } catch (error) {
-        console.error('Error creating notification:', error);
+        console.error('Error showing notification:', error);
         toast({
           title: "Error",
-          description: "Failed to create notification: " + error.message,
+          description: "Failed to show notification: " + error.message,
           variant: "destructive",
         });
       }
     } else {
-      console.log('Permission denied');
+      console.log('Permission denied or service worker not ready');
       toast({
         title: "Error",
         description: "Please enable notifications in your browser settings",
