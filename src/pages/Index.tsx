@@ -23,28 +23,76 @@ const Index = () => {
   useEffect(() => {
     // Request notification permission when the component mounts
     if ('Notification' in window) {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          console.log('Notification permission granted');
-        }
-      });
-    }
-  }, []);
-
-  const sendTestNotification = () => {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Attendance Reminder', {
-        body: 'This is a test notification. Don\'t forget to mark your attendance!',
-        icon: '/favicon.ico'
-      });
-      toast({
-        title: "Notification Sent",
-        description: "Check your browser notifications",
-      });
+      console.log('Current notification permission:', Notification.permission);
+      
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then((permission) => {
+          console.log('Permission request result:', permission);
+          if (permission === 'granted') {
+            toast({
+              title: "Notifications Enabled",
+              description: "You will now receive attendance reminders",
+            });
+          }
+        });
+      }
     } else {
+      console.log('Notifications not supported in this browser');
+    }
+  }, [toast]);
+
+  const sendTestNotification = async () => {
+    console.log('Attempting to send test notification...');
+    console.log('Current permission status:', Notification.permission);
+
+    if (!('Notification' in window)) {
+      console.log('Notifications not supported');
       toast({
         title: "Error",
-        description: "Notification permission not granted",
+        description: "Notifications are not supported in your browser",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      console.log('Permission requested:', permission);
+    }
+
+    if (Notification.permission === 'granted') {
+      console.log('Creating notification...');
+      try {
+        const notification = new Notification('Attendance Reminder', {
+          body: 'This is a test notification. Don\'t forget to mark your attendance!',
+          icon: '/favicon.ico',
+          requireInteraction: true, // This makes the notification stay until user interacts with it
+          tag: 'attendance-reminder' // This ensures we don't spam notifications
+        });
+
+        notification.onclick = () => {
+          console.log('Notification clicked');
+          window.focus();
+          notification.close();
+        };
+
+        toast({
+          title: "Notification Sent",
+          description: "Check your browser notifications",
+        });
+      } catch (error) {
+        console.error('Error creating notification:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create notification: " + error.message,
+          variant: "destructive",
+        });
+      }
+    } else {
+      console.log('Permission denied');
+      toast({
+        title: "Error",
+        description: "Please enable notifications in your browser settings",
         variant: "destructive",
       });
     }
