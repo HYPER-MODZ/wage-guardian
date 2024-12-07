@@ -19,6 +19,17 @@ const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  useEffect(() => {
+    // Request notification permission when the component mounts
+    if ('Notification' in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted');
+        }
+      });
+    }
+  }, []);
+
   const { data: attendance = {} } = useQuery({
     queryKey: ['attendance'],
     queryFn: getAttendanceData,
