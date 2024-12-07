@@ -10,6 +10,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { format } from "date-fns";
 import { getAttendanceData, updateAttendance, removeAttendance } from "@/lib/supabase-client";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -29,6 +30,25 @@ const Index = () => {
       });
     }
   }, []);
+
+  const sendTestNotification = () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Attendance Reminder', {
+        body: 'This is a test notification. Don\'t forget to mark your attendance!',
+        icon: '/favicon.ico'
+      });
+      toast({
+        title: "Notification Sent",
+        description: "Check your browser notifications",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Notification permission not granted",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { data: attendance = {} } = useQuery({
     queryKey: ['attendance'],
@@ -92,6 +112,13 @@ const Index = () => {
         </h1>
 
         <div className="grid gap-6">
+          <Button 
+            onClick={sendTestNotification}
+            className="w-full sm:w-auto"
+          >
+            Send Test Notification
+          </Button>
+
           <AttendanceCalendar
             attendance={attendance}
             onDateClick={handleDateClick}
