@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { calculateSalary } from "@/lib/salary";
-import { calculateAdvancedSalary } from "@/lib/advancedSalary";
 import { AttendanceStatus } from "@/lib/attendance";
 import { format, getDaysInMonth } from "date-fns";
 import { isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import SalaryFormula from "./SalaryFormula";
-import EnhancedSalaryFormula from "./EnhancedSalaryFormula";
 
 interface SalaryCalculatorProps {
   attendance: Record<string, AttendanceStatus>;
@@ -24,12 +22,10 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
   const [dailyRate, setDailyRate] = useState(750);
   const [tempDailyRate, setTempDailyRate] = useState(750);
   const [calculation, setCalculation] = useState(calculateSalary(750, 0, 0, 0, 0));
-  const [advancedCalculation, setAdvancedCalculation] = useState(calculateAdvancedSalary(750, 0, 0, 0, 0));
   const [potentialEarnings, setPotentialEarnings] = useState(0);
   const [missedEarnings, setMissedEarnings] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [showFormula, setShowFormula] = useState(false);
-  const [showAdvancedFormula, setShowAdvancedFormula] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -97,7 +93,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
     setMissedEarnings(missedAmount);
 
     setCalculation(calculateSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
-    setAdvancedCalculation(calculateAdvancedSalary(dailyRate, workingDays, absentDays, doubleDays, holidayDays));
   }, [attendance, dailyRate, currentMonth]);
 
   const handleSave = async () => {
@@ -210,21 +205,13 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
                   Rs. {missedEarnings}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowFormula(true)}
-                >
-                  Basic Formula
-                </Button>
-                <Button 
-                  variant="default"
-                  onClick={() => setShowAdvancedFormula(true)}
-                  className="bg-gradient-to-r from-primary to-violet-500 hover:from-primary/90 hover:to-violet-500/90"
-                >
-                  Advanced Formula
-                </Button>
-              </div>
+              <Button 
+                variant="outline"
+                onClick={() => setShowFormula(true)}
+                className="mt-2"
+              >
+                See Formula
+              </Button>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -233,13 +220,6 @@ const SalaryCalculator = ({ attendance, currentMonth }: SalaryCalculatorProps) =
           isOpen={showFormula}
           onClose={() => setShowFormula(false)}
           calculation={calculation}
-          dailyRate={dailyRate}
-        />
-
-        <EnhancedSalaryFormula
-          isOpen={showAdvancedFormula}
-          onClose={() => setShowAdvancedFormula(false)}
-          calculation={advancedCalculation}
           dailyRate={dailyRate}
         />
       </CardContent>
