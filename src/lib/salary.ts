@@ -6,10 +6,6 @@ export interface SalaryCalculation {
   holidayDays: number;
   grossSalary: number;
   netSalary: number;
-  attendanceBonus: number;
-  doubleShiftBonus: number;
-  holidayDeductions: number;
-  regularDaysPay: number;
 }
 
 export const calculateSalary = (
@@ -19,35 +15,19 @@ export const calculateSalary = (
   doubleDays: number,
   holidayDays: number
 ): SalaryCalculation => {
-  // Regular working days (excluding double shifts)
+  // totalDays now only includes present and double days
   const regularDays = totalDays - doubleDays;
-  const regularDaysPay = regularDays * dailyWage;
-
-  // Double shift calculations with 100% bonus
-  const doubleShiftBonus = doubleDays * dailyWage;
-  const doubleShiftBasePay = doubleDays * dailyWage;
-
-  // Attendance bonus (5% bonus if no absences)
-  const attendanceBonus = absentDays === 0 ? (regularDaysPay * 0.05) : 0;
-
-  // Holiday deductions
-  const holidayDeductions = holidayDays * dailyWage;
-
-  // Calculate gross and net salary
-  const grossSalary = regularDaysPay + doubleShiftBasePay + doubleShiftBonus + attendanceBonus;
-  const netSalary = grossSalary - holidayDeductions;
+  // Calculate salary without considering holidays
+  const grossSalary = (regularDays * dailyWage) + (doubleDays * dailyWage * 2);
+  const netSalary = grossSalary;
 
   return {
     dailyWage,
-    totalDays,
+    totalDays, // This now represents actual working days (present + double only)
     absentDays,
     doubleDays,
     holidayDays,
     grossSalary,
     netSalary,
-    attendanceBonus,
-    doubleShiftBonus,
-    holidayDeductions,
-    regularDaysPay,
   };
 };
